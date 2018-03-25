@@ -2,13 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CharacterController : MonoBehaviour
+public class sCharacterController : MonoBehaviour
 {
     //Allows use to change the speed of the character outside of the class.
     public float movementSpeed = 10.0f;
     public GameObject spawnPoint;
+    public bool bCanSeePage;
+    private GameObject page;
+    public int pagesCollected;
 
-	void Start ()
+    void Start ()
     {
         transform.position = spawnPoint.transform.position;
         transform.rotation = spawnPoint.transform.rotation;
@@ -34,11 +37,33 @@ public class CharacterController : MonoBehaviour
         {
             Cursor.lockState = CursorLockMode.None;
         }
+
+        if(pagesCollected >= 10)
+        {
+            print("You have won");
+        }
+
+        if(Input.GetKeyDown("e") && bCanSeePage == true)
+        {
+            pagesCollected++;
+            page.GetComponent<sPages>().PickUpPage();
+            page = null;
+            bCanSeePage = false;
+        }
 	}
 
     public void RespawnPlayer()
     {
         transform.position = spawnPoint.transform.position;
         transform.rotation = spawnPoint.transform.rotation;
+    }
+
+    private void OnTriggerEnter(Collider col)
+    {
+        if(col.gameObject.tag == "Page")
+        {
+            page = col.gameObject;
+            bCanSeePage = true;
+        }
     }
 }

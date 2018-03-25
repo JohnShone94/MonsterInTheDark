@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CameraRotationController : MonoBehaviour
+public class sCameraRotationController : MonoBehaviour
 {
     //We use this to set the Sensitivity of looking around.
     public float lookSensitivity = 5.0f;
