@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: 263be977f8989e84087f6e423acbeaaa
+timeCreated: 1522013828
+licenseType: Free
+TrueTypeFontImporter:
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: Anarchy
+  fontNames:
+  - Anarchy
+  fallbackFontReferences: []
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

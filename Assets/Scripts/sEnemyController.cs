@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class sEnemyController : MonoBehaviour
 {
@@ -11,7 +12,14 @@ public class sEnemyController : MonoBehaviour
     public sCharacterController cc;
     public float radiusMod = 1.0f;
     bool bCoroutineExecuting;
-    bool atPlayer;
+
+    public AudioSource OtherSource;
+    public AudioClip laughing;
+
+    public sOptionsManager om;
+
+    private float runningSpeed;
+    private float walkingSpeed;
 
 
     void Awake()
@@ -20,24 +28,16 @@ public class sEnemyController : MonoBehaviour
         cc = player.transform.GetComponent<sCharacterController>();
         nav = GetComponent<UnityEngine.AI.NavMeshAgent>();
         transform.position = GetRandomPosition(200.0f * radiusMod);
+        walkingSpeed = 5.0f;
+        runningSpeed = 10.0f;
+        nav.speed = walkingSpeed;
+
+        om = GameObject.FindGameObjectWithTag("WorldManager").GetComponent<sOptionsManager>();
+        OtherSource = GameObject.FindGameObjectWithTag("OtherSource").GetComponent<AudioSource>();
     }
 
     void FixedUpdate()
     {
-        nav.SetDestination(player.transform.position);
-        float dist = Vector3.Distance(player.transform.position, transform.position);
-        if (dist <= nav.stoppingDistance && !atPlayer)
-        {
-            atPlayer = true;
-
-            StartCoroutine(DelayAndRun(2.0f, () =>
-            {
-                cc.RespawnPlayer();
-                Relocate();
-                atPlayer = false;
-            }));
-        }
-
         RaycastHit see;
         Vector3 forward = player.transform.position - transform.position;
         if (Physics.Raycast(transform.position, forward, out see))
@@ -45,20 +45,28 @@ public class sEnemyController : MonoBehaviour
             if (see.transform == player)
             {
                 bCanSeePlayer = true;
+                nav.speed = runningSpeed;
             }
             else
             {
                 bCanSeePlayer = false;
-
-                StartCoroutine(DelayAndRun(10.0f, () =>
-                {
-                    if (!bCanSeePlayer)
-                    {
-                        Relocate();
-                    }
-                }));
+                nav.speed = walkingSpeed;
+                StartCoroutine("LostThePlayer");
             }
         }
+        nav.SetDestination(player.transform.position);
+        float dist = Vector3.Distance(player.transform.position, transform.position);
+        if (dist <= nav.stoppingDistance)
+        {
+            OtherSource.clip = laughing;
+            OtherSource.Play();
+            StartCoroutine("CourtThePlayer");
+        }
+    }
+
+    public void SetWalkingSpeed(float speed)
+    {
+        walkingSpeed += speed;
     }
 
     private Vector3 GetRandomPosition(float radius)
@@ -79,19 +87,24 @@ public class sEnemyController : MonoBehaviour
         transform.position = GetRandomPosition(140.0f * radiusMod);
     }
 
-    IEnumerator DelayAndRun(float time, Action function)
+    IEnumerator CourtThePlayer()
+    {
+        cc.bCanTakeInput = false;
+        cc.UpdateTheRot(gameObject.transform);
+
+        yield return new WaitForSeconds(5.0f);
+        om.LoadEndGame();
+    }
+    IEnumerator LostThePlayer()
     {
         if (bCoroutineExecuting)
         {
             yield break;
         }
-
         bCoroutineExecuting = true;
-
-        yield return new WaitForSeconds(time);
-
-        function();
-
+        yield return new WaitForSeconds(10.0f);
+        Relocate();
         bCoroutineExecuting = false;
     }
+
 }
