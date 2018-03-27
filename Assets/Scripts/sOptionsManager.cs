@@ -10,11 +10,14 @@ public class sOptionsManager : MonoBehaviour
 
 
     public Toggle fullScreenToggle;
+    public Toggle advancedToggle;
     public Dropdown resDropdown;
     public Dropdown textureDropdown;
     public Dropdown aaDropdown;
     public Dropdown vSyncDropdown;
+    public Dropdown gameQuality;
     public Slider volumeSlider;
+    public Slider fovSlider;
     public Button btnApplySettings;
     public Button btnResume;
     public Button btnRestart;
@@ -24,15 +27,17 @@ public class sOptionsManager : MonoBehaviour
     public Button btnEgReturnToMM;
     public sCharacterController cc;
 
+    public Text fovPercent;
+
     public GameObject pauseMenu;
     public GameObject optionsMenu;
     public GameObject endGameMenu;
+    public GameObject advancedMenu;
 
     public bool endGame;
 
     public AudioSource musicSource;
     public AudioClip lullaby;
-
     public Resolution[] resolutions;
     public sSettingsClass settings;
 
@@ -41,11 +46,14 @@ public class sOptionsManager : MonoBehaviour
         settings = new sSettingsClass();
 
         fullScreenToggle.onValueChanged.AddListener(delegate { OnToggleFullscreen(); });
+        advancedToggle.onValueChanged.AddListener(delegate { OnAdvancedToggle(); });
         resDropdown.onValueChanged.AddListener(delegate { OnChangeResolution(); });
+        gameQuality.onValueChanged.AddListener(delegate { OnChangeGameQuality(); });
         textureDropdown.onValueChanged.AddListener(delegate { OnChangeTexture(); });
         aaDropdown.onValueChanged.AddListener(delegate { OnChangeAntialiasing(); });
         vSyncDropdown.onValueChanged.AddListener(delegate { OnChangeVSync(); });
         volumeSlider.onValueChanged.AddListener(delegate { OnChangeVolume(); });
+        fovSlider.onValueChanged.AddListener(delegate { OnChangeFOV(); });
 
         btnApplySettings.onClick.AddListener(delegate { SaveUserSettings(); });
         btnResume.onClick.AddListener(delegate { ResumeGame(); });
@@ -55,11 +63,18 @@ public class sOptionsManager : MonoBehaviour
         btnReturnToMM.onClick.AddListener(delegate { ReturnToMM(); });
         btnEgReturnToMM.onClick.AddListener(delegate { EgReturnToMM(); });
 
+        advancedToggle.isOn = false;
+
         resolutions = Screen.resolutions;
 
         foreach(Resolution resolution in resolutions)
         {
             resDropdown.options.Add(new Dropdown.OptionData(resolution.ToString()));
+        }
+
+        for(int i = 0; i < QualitySettings.names.Length; i++)
+        {
+            gameQuality.options.Add(new Dropdown.OptionData(QualitySettings.names[i].ToString()));
         }
 
         LoadUserSettings();
@@ -80,6 +95,10 @@ public class sOptionsManager : MonoBehaviour
     public void OnToggleFullscreen()
     {
         settings.fullscreen = Screen.fullScreen = fullScreenToggle.isOn;
+    }
+    public void OnAdvancedToggle()
+    {
+        advancedMenu.SetActive(advancedToggle.isOn);
     }
 
     public void OnChangeResolution()
@@ -107,6 +126,21 @@ public class sOptionsManager : MonoBehaviour
     public void OnChangeVolume()
     {
         musicSource.volume = settings.musicVolume = volumeSlider.value;
+    }
+
+    public void OnChangeFOV()
+    {
+        Camera.main.fieldOfView = settings.FOV = fovSlider.value;
+        fovPercent.text = fovSlider.value.ToString();
+    }
+
+    public void OnChangeGameQuality()
+    {
+        settings.qualityLevel = gameQuality.value;
+        QualitySettings.SetQualityLevel(settings.qualityLevel);
+        vSyncDropdown.value = QualitySettings.vSyncCount;
+        textureDropdown.value = QualitySettings.masterTextureLimit;
+        aaDropdown.value = QualitySettings.antiAliasing;
     }
 
     public void ResumeGame()
@@ -163,13 +197,31 @@ public class sOptionsManager : MonoBehaviour
 
     public void LoadUserSettings()
     {
+        if (!File.Exists(Application.persistentDataPath + "/userSettings.json"))
+        {
+            settings.qualityLevel = 3;
+            settings.fullscreen = true;
+            settings.textureQual = QualitySettings.masterTextureLimit;
+            settings.musicVolume = 0.5f;
+            settings.antialiasing = QualitySettings.antiAliasing;
+            settings.vSync = QualitySettings.vSyncCount;
+            settings.resolutionInd = resolutions.Length;
+            settings.FOV = 45;
+            SaveUserSettings();
+        }
+
         settings = JsonUtility.FromJson<sSettingsClass>(File.ReadAllText(Application.persistentDataPath + "/userSettings.json"));
         volumeSlider.value = settings.musicVolume;
         aaDropdown.value = settings.antialiasing;
         vSyncDropdown.value = settings.vSync;
         textureDropdown.value = settings.textureQual;
         resDropdown.value = settings.resolutionInd;
+        fovSlider.value = settings.FOV;
+        fovPercent.text = fovSlider.value.ToString();
+        gameQuality.value = settings.qualityLevel;
         Screen.fullScreen = fullScreenToggle.isOn = settings.fullscreen;
+        QualitySettings.SetQualityLevel(settings.qualityLevel);
         resDropdown.RefreshShownValue();
+        gameQuality.RefreshShownValue();
     }
 }
