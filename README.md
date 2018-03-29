@@ -1,5 +1,9 @@
 # MonsterInTheDark
 
+Download for the game: https://hudac-my.sharepoint.com/:u:/g/personal/u1660571_unimail_hud_ac_uk/ERPZg_vQ95JNrSzqh45u018BVhuOBb3P0DwtkjoH2bO6WA?e=bZ6k6A
+
+Video of the game: https://www.youtube.com/watch?v=xLd4J-f6MK8
+
 Music in the game was created by the following:
 
 Laughing
